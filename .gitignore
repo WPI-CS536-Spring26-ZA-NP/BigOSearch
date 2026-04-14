@@ -1,6 +1,13 @@
 # Prerequisites
 *.d
 
+# Build Directories
+build/
+out/
+
+# Dot Directories
+.*/
+
 # Compiled Object files
 *.slo
 *.lo
