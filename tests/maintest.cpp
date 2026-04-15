@@ -88,21 +88,30 @@ vector<int> vector_int_input_generator(int size) {
 	return v;
 }
 
-void* maxFunctionTester(void* input) {
-	int* res = (int*)malloc(sizeof(int));
-	*res = find_max(*static_cast<vector<int>*>(input));	
-	return static_cast<void*>(res);	
+void* maxFunctionTester(void* input, void* res) {
+	int* val = (int*)res;
+	*val = find_max(*static_cast<vector<int>*>(input));	
+	return static_cast<void*>(val);	
 }
 
-void* bubbleSortFunctionTester(void* input) {
+void* bubbleSortFunctionTester(void* input, void* res) {
+	vector<int>* val = (vector<int>*) res;
 	bubble_sort(*static_cast<vector<int>*>(input));	
-	return input;
+	*val = *static_cast<vector<int>*>(input);
+	return static_cast<void*>(val);
 }
 
-void* cubicFunctionTester(void* input) {
-	int* res = (int*)malloc(sizeof(int));
-	*res = cubic_function(*static_cast<int*>(input));	
-	return static_cast<void*>(res);	
+void* cubicFunctionTester(void* input, void* res) {
+	int* val = (int*) res;
+	*val = cubic_function(*static_cast<int*>(input));	
+	return static_cast<void*>(val);	
+}
+
+void clean_up(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result) {
+	auto map = std::get<1>(result);
+	for (auto& m: map) {
+		free(std::get<1>(m.second));
+	}
 }
 
 int main(){
@@ -117,6 +126,8 @@ int main(){
    findMaxMap[(void*)&list2] = (void*)&maxresult;	
    findMaxMap[(void*)&list3] = (void*)&maxresult;	
    findMaxMap[(void*)&list4] = (void*)&maxresult;	
-   auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap);
+   auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap, sizeof(int));
    printf("Result of Max testing (all):%d\n", std::get<0>(findMaxResult));
+   
+   clean_up(findMaxResult);
 }
