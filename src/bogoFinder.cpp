@@ -3,6 +3,7 @@
 #include <sys/wait.h>
 #include <thread>
 #include <mutex>
+#include <cstdlib>
 
 namespace bigO_Finder
 {
@@ -11,7 +12,7 @@ namespace bigO_Finder
     std::thread *threads = nullptr;
 
     std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>>
-    testingFunction(functionTester tester, EQFunc eqFunc, std::map<input, expectedOutput> map,size_t OutputTypeSize)
+    testingFunction(functionTester tester, EQFunc eqFunc, std::map<input, expectedOutput> map, size_t OutputTypeSize)
     {
 
         std::map<input, std::tuple<bool, output, expectedOutput>> outmap;
@@ -20,7 +21,7 @@ namespace bigO_Finder
         for (auto &&i : map)
         {
 
-            void* resp = malloc(OutputTypeSize);
+            void *resp = malloc(OutputTypeSize);
             output oput = tester(i.first, resp);
             bool valid = eqFunc(oput, i.second);
             outmap[i.first] = std::tuple(valid, oput, i.second);
@@ -31,6 +32,15 @@ namespace bigO_Finder
             }
         }
         return std::tuple(res, outmap);
+    }
+
+    void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result)
+    {
+        auto map = std::get<1>(result);
+        for (auto &m : map)
+        {
+            free(std::get<1>(m.second));
+        }
     }
 
     struct timespec diff_timespec(const struct timespec *time1,
@@ -64,7 +74,7 @@ namespace bigO_Finder
 
     void handleRegressionCalcs(regressionData *outR);
 
-    struct regressionData regressionFinder(generatorFunction gf, functionTester ft,size_t OutputTypeSize)
+    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize)
     {
         regressionData outR{};
         for (size_t i = 1; i < 10000; i = i << 2)
@@ -85,9 +95,9 @@ namespace bigO_Finder
                 alarm((int)maxTime);
                 timespec start;
                 timespec end;
-                void* res= malloc(OutputTypeSize);
+                void *res = malloc(OutputTypeSize);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-                output out = ft(in,res);
+                output out = ft(in, res);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
                 free(res);
