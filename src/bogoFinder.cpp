@@ -63,12 +63,12 @@ namespace bigO_Finder
 
     void handleRegressionCalcs(regressionData *outR);
 
-    struct regressionData regressionFinder(generatorFunction, functionTester)
+    struct regressionData regressionFinder(generatorFunction gf, functionTester ft)
     {
         regressionData outR{};
         for (size_t i = 1; i < 10000; i = i << 2)
         {
-            input in = generatorFunction(i);
+            input in = gf(i);
 
             pid_t id = fork();
             pipe(Pipe);
@@ -85,7 +85,7 @@ namespace bigO_Finder
                 timespec start;
                 timespec end;
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-                output out = functionTester(in);
+                output out = ft(in);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
                 timespec diff = diff_timespec(&end, &start);
