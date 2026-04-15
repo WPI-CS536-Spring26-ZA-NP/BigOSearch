@@ -1,5 +1,7 @@
 #include <map>
 #include <tuple>
+#include <vector>
+#include <time.h>
 namespace bigO_Finder{
 
     inline double maxTime = 10.0; // Default Timeout is 10 secs but can be changed globally
@@ -12,5 +14,8 @@ namespace bigO_Finder{
     typedef void* expectedOutput;
     std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> testingFunction (functionTester, EQFunc, std::map<input,expectedOutput>);
     struct regressionData regressionFinder(generatorFunction, functionTester);
-    struct regressionData{};
+    struct regressionData{
+        const char* order;
+        std::vector<std::pair<int,timespec>> outputPairs;
+    };
 };

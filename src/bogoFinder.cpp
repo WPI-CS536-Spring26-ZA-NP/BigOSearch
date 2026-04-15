@@ -26,3 +26,4 @@ namespace bigO_Finder {
         }
         return std::tuple(res, outmap);
     }
+}
