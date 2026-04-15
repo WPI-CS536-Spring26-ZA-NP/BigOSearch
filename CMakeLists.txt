@@ -7,4 +7,11 @@ Set(CMAKE_CXX_STANDARD 20)
 file(GLOB_RECURSE srcs src/*.c src/*.cpp)
 
 add_library(${CMAKE_PROJECT_NAME} ${srcs})
-target_include_directories(${PROJECT_NAME} PRIVATE "include")
+target_include_directories(${PROJECT_NAME} PUBLIC "include")
+
+
+file(GLOB_RECURSE testsrcs tests/*.c tests/*.cpp)
+
+
+add_executable(Tests ${testsrcs})
+target_link_libraries(Tests PRIVATE ${CMAKE_PROJECT_NAME})
