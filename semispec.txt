@@ -1,0 +1,85 @@
+bool usereqcuntion(outa outbe)
+
+double max time = 10sec, but user could change
+
+testingFunction(fcuntionToTest,eqfunc, map<inp,out>)
+{
+//say which one failed
+	outmap <input, tuple(bool,output,expecteoutut)>
+	bool a = true
+	for i in map
+		outmap[i.input] = functotest(i.input)
+		if( !eqfunc(outmap[i.input],i.output)){
+		a = false		
+}
+	return tuple (a, outmap)
+}
+
+
+
+
+
+
+
+regrassionchecker (generatorfunc, ffunctiontenseter){
+
+var = startTIme
+
+functionTester(void*a){
+		
+	int a = 
+	double b
+	
+	functionToTest2(a,b)
+return var
+}
+
+entime
+
+end-start
+
+strore inoput size tin aoutout time
+
+regraeesion on those, and do a plot
+
+
+}
+
+
+
+void* generatorFunction(void*, unsigned int size) -- user generator
+
+__ functionTester(void*) -- provided by user
+
+functionToTest(struct A a);
+functionToTest2(int a, double b);
+
+functionTester(void*a){
+		
+	functionToTest(*(struct A*)a)
+}
+
+var = startTIme
+
+functionTester(void*a){
+		
+	int a = 
+	double b
+	
+	functionToTest2(a,b)
+return var
+}
+
+entime
+
+end-start
+
+strore inoput size tin aoutout time
+
+regraeesion on those, and do a plot
+
+
+eqaulityfunction
+transformer function
+inputoutut pairs
+generator function
