@@ -83,24 +83,37 @@ bool vector_int_equality(void *aa, void *bb)
     return is_equal;
 }
 
-int int_input_generator(int size)
+void* int_input_generator(int size)
 {
-    return size;
+    int* v = new int;
+    *v = size;
+    return (void*)v;
+}
+
+void int_input_cleanup_function(input in) {
+    delete (int*)in;
 }
 
 void* vector_int_input_generator(int size)
 {
-    vector<int> v = {};
-    v.reserve(size);
+    vector<int> *v = new vector<int>(); 
+
+    // bubble_sort(*static_cast<vector<int> *>(input));
+
+    v->reserve(size);
     // Seed with current time to get different results each run
     std::srand(static_cast<unsigned int>(size));
 
     for (int i = 0; i < size; i++)
     {
-        v[i] = static_cast<int>(std::rand() * 67);
+        (*v)[i] = static_cast<int>(std::rand() * 67);
     }
 
-    return &v;
+    return v;
+}
+
+void vector_int_cleanup_function(input in) {
+    delete (vector<int>*)in;
 }
 
 void *maxFunctionTester(void *input, void *res)
@@ -146,10 +159,10 @@ int main()
     auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap, sizeof(int));
     printf("Result of Max testing (all):%d\n", std::get<0>(findMaxResult));
 
-    struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>));
+    struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>), vector_int_cleanup_function);
     printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
 
-    cleanUpTestResults(findMaxResult);
+    cleanUpTestResults(findMaxResult, int_input_cleanup_function);
 
     // bubbleSort timing
 
@@ -166,7 +179,7 @@ int main()
     auto findBuubleResult = testingFunction(bubbleSortFunctionTester, vector_int_equality, bubbleSortMap, sizeof(vector<int>));
     printf("Result of Max testing (all):%d\n", std::get<0>(findBuubleResult));
 
-    cleanUpTestResults(findBuubleResult);
+    cleanUpTestResults(findBuubleResult, vector_int_cleanup_function);
 
 
         // cubic_function time
@@ -187,5 +200,5 @@ int main()
     auto findCubRest = testingFunction(cubicFunctionTester, int_equality, cubMap, sizeof(int));
     printf("Result of Max testing (all):%d\n", std::get<0>(findCubRest));
 
-    cleanUpTestResults(findCubRest);
+    cleanUpTestResults(findCubRest, int_input_cleanup_function);
 }

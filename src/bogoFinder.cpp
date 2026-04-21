@@ -25,7 +25,7 @@ namespace bigO_Finder
         for (auto &&i : map)
         {
 
-            void *resp = malloc(OutputTypeSize);
+            void *resp = new char[OutputTypeSize];
             output oput = tester(i.first, resp);
             bool valid = eqFunc(oput, i.second);
             outmap[i.first] = std::tuple(valid, oput, i.second);
@@ -38,12 +38,12 @@ namespace bigO_Finder
         return std::tuple(res, outmap);
     }
 
-    void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result)
+    void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result, outputCleanup g)
     {
         auto map = std::get<1>(result);
         for (auto &m : map)
         {
-            free(std::get<1>(m.second));
+            g((std::get<1>(m.second)));
         }
     }
 
@@ -78,13 +78,13 @@ namespace bigO_Finder
 
     void handleRegressionCalcs(regressionData *outR);
 
-    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize)
+    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize,inputCleanup ic)
     {
         regressionData outR{};
+        char *res = new char[OutputTypeSize];
         for (size_t i = 1; i < 9999999; i = i << 1)
         {
             input in = gf(i);
-            void *res = (void*)malloc(OutputTypeSize);
 
             pipe(Pipe);
             pid_t id = fork();
@@ -95,7 +95,7 @@ namespace bigO_Finder
             }
             else if (id == 0)
             {
-                printf("Child process start...\n");
+                //printf("Child process start...\n");
                 close(Pipe[0]);
                 signal(SIGALRM, alarmHandler);
                 alarm((int)maxTime);
@@ -105,17 +105,21 @@ namespace bigO_Finder
                 // void *res = (void*)malloc(OutputTypeSize);
                 //printf("Post malloc, about to run fuction\n");
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-                output out = ft(in, res);
+                int ll = 0;
+                for(int ii = 0 ; ii <10*i; ii++){
+                    ll +=i;
+                }
+                output out = ft(in, (void*)res);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
                 free(res);
                 timespec diff = diff_timespec(&end, &start);
-                printf("Time difference is calcd\n");
+                printf("Time difference is %lds, %ldns\n", diff.tv_sec, diff.tv_nsec);
                 bigO_Finder::out.failed = false;
                 bigO_Finder::out.time = diff;
                 write(Pipe[1], &out, sizeof(out));
                 close(Pipe[1]);
-                printf("~~~child process end~~~\n");
+                //printf("~~~child process end~~~\n");
                 exit(0);
             }
             else
@@ -125,11 +129,12 @@ namespace bigO_Finder
                 read(Pipe[0], &out, sizeof(out));
                 close(Pipe[1]);
                 outR.outputPairs.push_back(std::make_pair(i, out.time));
-                free(res);
                 //printf("...done!\n");
             }
+            ic(in);
             //printf("\nTEST %ld done\n", i);
         }
+        delete res;
         handleRegressionCalcs(&outR);
         return outR;
     }

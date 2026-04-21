@@ -13,12 +13,15 @@ namespace bigO_Finder
     typedef void *input;
     typedef void *output;
     typedef void *expectedOutput;
+    typedef void (*inputCleanup)(input);
+    typedef void (*outputCleanup)(output);
     std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> testingFunction(functionTester, EQFunc, std::map<input, expectedOutput>, size_t OutputTypeSize);
-    void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result);
-    struct regressionData regressionFinder(generatorFunction, functionTester, size_t OutputTypeSize);
+    void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result, outputCleanup);
+    struct regressionData regressionFinder(generatorFunction, functionTester, size_t OutputTypeSize,inputCleanup);
     struct regressionData
     {
         const char *order;
         std::vector<std::pair<int, timespec>> outputPairs;
     };
+
 };
