@@ -88,7 +88,7 @@ int int_input_generator(int size)
     return size;
 }
 
-vector<int> vector_int_input_generator(int size)
+void* vector_int_input_generator(int size)
 {
     vector<int> v = {};
     v.reserve(size);
@@ -100,7 +100,7 @@ vector<int> vector_int_input_generator(int size)
         v[i] = static_cast<int>(std::rand() * 67);
     }
 
-    return v;
+    return &v;
 }
 
 void *maxFunctionTester(void *input, void *res)
@@ -145,6 +145,9 @@ int main()
     findMaxMap[(void *)&list4] = (void *)&maxresult;
     auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap, sizeof(int));
     printf("Result of Max testing (all):%d\n", std::get<0>(findMaxResult));
+
+    struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>));
+    printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
 
     cleanUpTestResults(findMaxResult);
 

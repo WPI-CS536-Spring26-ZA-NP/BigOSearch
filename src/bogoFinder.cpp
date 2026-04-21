@@ -4,6 +4,10 @@
 #include <thread>
 #include <mutex>
 #include <cstdlib>
+#include <Eigen/Dense>
+#include <cmath>
+#include <limits>
+#include <string>
 
 namespace bigO_Finder
 {
@@ -77,12 +81,13 @@ namespace bigO_Finder
     struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize)
     {
         regressionData outR{};
-        for (size_t i = 1; i < 10000; i = i << 2)
+        for (size_t i = 1; i < 9999999; i = i << 1)
         {
             input in = gf(i);
+            void *res = (void*)malloc(OutputTypeSize);
 
-            pid_t id = fork();
             pipe(Pipe);
+            pid_t id = fork();
 
             if (id == -1)
             {
@@ -90,36 +95,149 @@ namespace bigO_Finder
             }
             else if (id == 0)
             {
+                printf("Child process start...\n");
                 close(Pipe[0]);
                 signal(SIGALRM, alarmHandler);
                 alarm((int)maxTime);
                 timespec start;
                 timespec end;
-                void *res = malloc(OutputTypeSize);
+                //printf("About to run malloc...\n");
+                // void *res = (void*)malloc(OutputTypeSize);
+                //printf("Post malloc, about to run fuction\n");
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
                 output out = ft(in, res);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
                 free(res);
                 timespec diff = diff_timespec(&end, &start);
+                printf("Time difference is calcd\n");
                 bigO_Finder::out.failed = false;
                 bigO_Finder::out.time = diff;
                 write(Pipe[1], &out, sizeof(out));
+                close(Pipe[1]);
+                printf("~~~child process end~~~\n");
                 exit(0);
             }
             else
             {
-
+                //printf("Parent waiting for child %d to give information...\n", id);
+                close(Pipe[1]);
                 read(Pipe[0], &out, sizeof(out));
+                close(Pipe[1]);
                 outR.outputPairs.push_back(std::make_pair(i, out.time));
+                free(res);
+                //printf("...done!\n");
             }
+            //printf("\nTEST %ld done\n", i);
         }
         handleRegressionCalcs(&outR);
-
         return outR;
     }
 
+    /*REGRESSION HANDLING HELPERS*/
+    static double timespecToNs(const timespec& ts)
+    {
+        // convert to timespec interval to nano seconds
+        return 1e9 * static_cast<double>(ts.tv_sec) + static_cast<double>(ts.tv_nsec);
+    }
+
+    static double mse(const std::vector<double>& y, const std::vector<double>& yhat)
+    {
+        // given a runtime estimate model predictions (yhat) compute error from empircal runtimes
+        double s = 0.0;
+        for (size_t i = 0; i < y.size(); i++)
+        {
+            // sum error acrued from each input size
+            double d = y[i] - yhat[i];
+            s += d * d;
+        }
+
+        // average across all tests to get mean error
+        return s / static_cast<double>(y.size());
+    }
+
+    /* ~~~ basis functions to test for our empirical regression estimation ~~~ */
+    static double basis_constant(double n) { return 1.0; }
+    static double basis_log(double n)      { return std::log(std::max(2.0, n)); }
+    static double basis_linear(double n)   { return n; }
+    static double basis_nlogn(double n)    { return n * std::log(std::max(2.0, n)); }
+    static double basis_quad(double n)     { return n * n; }
+    static double basis_cubic(double n)    { return n * n * n; }
+    // a* f(x) + b
+
     void handleRegressionCalcs(regressionData *outR)
     {
+        // accumulate our function candidates into a vector of struct
+        struct Candidate
+        {
+            const char* name;
+            double (*basis)(double);
+        };
+        std::vector<Candidate> candidates = {
+            {"O(1)",      basis_constant},
+            {"O(log n)",  basis_log},
+            {"O(n)",      basis_linear},
+            {"O(n log n)",basis_nlogn},
+            {"O(n^2)",    basis_quad},
+            {"O(n^3)",    basis_cubic}
+        };
+
+        // if less than 2 data points --> can't predict empirically, return error gracefully
+        const size_t m = outR->outputPairs.size();
+        if (m < 2)
+        {
+            outR->order = "Unknown";
+            return;
+        }
+
+        // collect input sizes and resulting time intervals in nanoseconds
+        // from our runs (as double)
+        std::vector<double> ns(m), ts(m);
+        for (size_t i = 0; i < m; i++)
+        {
+            ns[i] = static_cast<double>(outR->outputPairs[i].first); // sizes (x)
+            ts[i] = timespecToNs(outR->outputPairs[i].second); // run times (y)
+        }
+
+        // track current best MSE and function name
+        double bestMSE = std::numeric_limits<double>::infinity();
+        const char* bestName = "Unknown";
+
+        // main loop: loop over each candidate function and calculate its MSE
+        for (const auto& cand : candidates)
+        {
+            // use Eigen to manage f(input size) -> run time functions
+            Eigen::MatrixXd X(m, 2);
+            Eigen::VectorXd y(m);
+
+            // load the input size and run time pairs into Eigen matrices
+            for (size_t i = 0; i < m; i++)
+            {
+                X(i, 0) = cand.basis(ns[i]); // a * basis_function(x) + ...
+                X(i, 1) = 1.0; // ... + b
+                y(i) = ts[i];
+            }
+
+            // solve the regression and use it to make predictions based on the input
+            Eigen::VectorXd beta = X.colPivHouseholderQr().solve(y);
+            Eigen::VectorXd yhat = X * beta;
+
+            // store the predictions for this regression in a vector 
+            std::vector<double> pred(m);
+            for (size_t i = 0; i < m; i++)
+                pred[i] = yhat(i);
+
+            // given predictions, ground truths -> compute the MSE from this model 
+            double modelMSE = mse(ts, pred);
+            if (modelMSE < bestMSE)
+            {
+                // update bestMSE and O(f(x)) estimation is necessary
+                bestMSE = modelMSE;
+                bestName = cand.name;
+            }
+        }
+
+        // result: O(F(x)) complexity estimation
+        outR->order = bestName;
     }
 }
