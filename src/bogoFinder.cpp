@@ -129,7 +129,7 @@ namespace bigO_Finder
                 printf("Time difference is %lds, %ldus\n", diff.tv_sec, diff.tv_usec);
                 bigO_Finder::out.failed = false;
                 bigO_Finder::out.time.tv_sec = diff.tv_sec;
-                bigO_Finder::out.time.tv_nsec = diff.tv_usec * 100;
+                bigO_Finder::out.time.tv_nsec = diff.tv_usec * 1000;
                 write(Pipe[1], &out, sizeof(out));
                 close(Pipe[1]);
                 // printf("~~~child process end~~~\n");

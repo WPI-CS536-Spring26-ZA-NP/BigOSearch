@@ -98,8 +98,7 @@ namespace bigO_Finder2
         Private::pipe(Private::Pipe);
         for (size_t i = 1; i < 9999999; i = i << 1)
         {
-            InputType in = gf(i);
-
+            
             pid_t id = Private::fork();
 
             if (id == -1)
@@ -108,6 +107,7 @@ namespace bigO_Finder2
             }
             else if (id == 0)
             {
+                InputType in = gf(i);
                 Private::close(Private::Pipe[0]);
                 Private::alarmSignalHandler(Private::alarmHandler);
                 Private::alarm((int)maxTime);

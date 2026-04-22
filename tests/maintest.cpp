@@ -229,10 +229,10 @@ int main()
         cubMap[100] = 1000000;
         auto findCubRest = bigO_Finder2::testingFunction<int, int>(cubic_function, [](int a, int b)
                                                                    { return a == b; }, cubMap);
-        printf("Result of Max testing (all):%d\n", std::get<0>(findCubRest));
+        printf("Result of Cub testing (all):%d\n", std::get<0>(findCubRest));
         for (auto &&i : std::get<1>(findCubRest))
         {
-            printf("Result of Max testing (%d):%d -- got %d\texpected %d\n", i.first, std::get<0>(i.second), std::get<1>(i.second), std::get<2>(i.second));
+            printf("Result of Cub instance testing (%d):%d -- got %d\texpected %d\n", i.first, std::get<0>(i.second), std::get<1>(i.second), std::get<2>(i.second));
         }
 
         // cleanUpTestResults(findCubRest, int_input_cleanup_function);
@@ -253,7 +253,7 @@ int main()
         auto findBuubleResult = bigO_Finder2::testingFunction<std::vector<int>, std::vector<int>>([](auto a)
                                                                                                   { bubble_sort(a); return a; }, [](auto a, auto b)
                                                                                                   { return a == b; }, bubbleSortMap);
-        printf("Result of Max testing (all):%d\n", std::get<0>(findBuubleResult));
+        printf("Result of Bubble testing (all):%d\n", std::get<0>(findBuubleResult));
         for (auto &&i : std::get<1>(findBuubleResult))
         {
             // printf("Result of Max testing (%d):%d -- got %d\texpected %d\n", i.first, std::get<0>(i.second), std::get<1>(i.second), std::get<2>(i.second));
