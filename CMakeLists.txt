@@ -15,7 +15,7 @@ FetchContent_Declare(
 set(EIGEN_BUILD_DOC OFF)
 set(EIGEN_BUILD_TESTING OFF)
 FetchContent_MakeAvailable(Eigen)
-find_package(Eigen3 REQUIRED NO_MODULE)
+# find_package(Eigen3 REQUIRED NO_MODULE)
 
 file(GLOB_RECURSE srcs src/*.c src/*.cpp)
 
