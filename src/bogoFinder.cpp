@@ -78,11 +78,11 @@ namespace bigO_Finder
 
     void handleRegressionCalcs(regressionData *outR);
 
-    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize,inputCleanup ic)
+    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize,inputCleanup ic, int n)
     {
         regressionData outR{};
         char *res = new char[OutputTypeSize];
-        for (size_t i = 1; i < 9999999; i = i << 1)
+        for (size_t i = 1; i < n; i = i << 1) // n = max size to test (floor power of 2)
         {
             input in = gf(i);
 
@@ -105,10 +105,10 @@ namespace bigO_Finder
                 // void *res = (void*)malloc(OutputTypeSize);
                 //printf("Post malloc, about to run fuction\n");
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-                int ll = 0;
+                /*int ll = 0;
                 for(int ii = 0 ; ii <10*i; ii++){
                     ll +=i;
-                }
+                }*/
                 output out = ft(in, (void*)res);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
@@ -117,7 +117,8 @@ namespace bigO_Finder
                 printf("Time difference is %lds, %ldns\n", diff.tv_sec, diff.tv_nsec);
                 bigO_Finder::out.failed = false;
                 bigO_Finder::out.time = diff;
-                write(Pipe[1], &out, sizeof(out));
+                //write(Pipe[1], &out, sizeof(out));
+                write(Pipe[1], &bigO_Finder::out, sizeof(bigO_Finder::out));
                 close(Pipe[1]);
                 //printf("~~~child process end~~~\n");
                 exit(0);
@@ -134,7 +135,7 @@ namespace bigO_Finder
             ic(in);
             //printf("\nTEST %ld done\n", i);
         }
-        delete res;
+        delete[] res;
         handleRegressionCalcs(&outR);
         return outR;
     }
@@ -186,6 +187,11 @@ namespace bigO_Finder
             {"O(n^2)",    basis_quad},
             {"O(n^3)",    basis_cubic}
         };
+
+        // debug: print everything before regression (after parent recieves info from child)
+        for (const auto& p : outR->outputPairs) {
+            printf("(n=%d, time_ns=%f)\n", p.first, timespecToNs(p.second));
+        }
 
         // if less than 2 data points --> can't predict empirically, return error gracefully
         const size_t m = outR->outputPairs.size();
