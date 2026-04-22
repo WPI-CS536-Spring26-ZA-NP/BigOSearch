@@ -1,6 +1,7 @@
 #include "bigoFinder.hpp"
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
 #include <thread>
 #include <mutex>
 #include <cstdlib>
@@ -60,6 +61,19 @@ namespace bigO_Finder
         }
         return diff;
     }
+    timeval diff_timeval(const struct timeval *time1,
+                         const struct timeval *time0)
+    {
+
+        timeval diff = {.tv_sec = time1->tv_sec - time0->tv_sec, //
+                        .tv_usec = time1->tv_usec - time0->tv_usec};
+        if (diff.tv_usec < 0)
+        {
+            diff.tv_usec += 1000000; // nsec/sec
+            diff.tv_sec--;
+        }
+        return diff;
+    }
 
     static struct
     {
@@ -78,7 +92,7 @@ namespace bigO_Finder
 
     void handleRegressionCalcs(regressionData *outR);
 
-    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize,inputCleanup ic)
+    struct regressionData regressionFinder(generatorFunction gf, functionTester ft, size_t OutputTypeSize, inputCleanup ic)
     {
         regressionData outR{};
         char *res = new char[OutputTypeSize];
@@ -95,44 +109,43 @@ namespace bigO_Finder
             }
             else if (id == 0)
             {
-                //printf("Child process start...\n");
+                // printf("Child process start...\n");
                 close(Pipe[0]);
                 signal(SIGALRM, alarmHandler);
                 alarm((int)maxTime);
                 timespec start;
+                rusage startR;
                 timespec end;
-                //printf("About to run malloc...\n");
-                // void *res = (void*)malloc(OutputTypeSize);
-                //printf("Post malloc, about to run fuction\n");
-                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-                int ll = 0;
-                for(int ii = 0 ; ii <10*i; ii++){
-                    ll +=i;
-                }
-                output out = ft(in, (void*)res);
-                clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
+                rusage endR;
+                // printf("About to run malloc...\n");
+                //  void *res = (void*)malloc(OutputTypeSize);
+                // printf("Post malloc, about to run fuction\n");
+                getrusage(RUSAGE_SELF, &startR);
+                output out = ft(in, (void *)res);
+                getrusage(RUSAGE_SELF, &endR);
                 alarm(0);
                 free(res);
-                timespec diff = diff_timespec(&end, &start);
-                printf("Time difference is %lds, %ldns\n", diff.tv_sec, diff.tv_nsec);
+                timeval diff = diff_timeval(&endR.ru_utime, &startR.ru_utime);
+                printf("Time difference is %lds, %ldus\n", diff.tv_sec, diff.tv_usec);
                 bigO_Finder::out.failed = false;
-                bigO_Finder::out.time = diff;
+                bigO_Finder::out.time.tv_sec = diff.tv_sec;
+                bigO_Finder::out.time.tv_nsec = diff.tv_usec * 100;
                 write(Pipe[1], &out, sizeof(out));
                 close(Pipe[1]);
-                //printf("~~~child process end~~~\n");
+                // printf("~~~child process end~~~\n");
                 exit(0);
             }
             else
             {
-                //printf("Parent waiting for child %d to give information...\n", id);
+                // printf("Parent waiting for child %d to give information...\n", id);
                 close(Pipe[1]);
                 read(Pipe[0], &out, sizeof(out));
                 close(Pipe[1]);
                 outR.outputPairs.push_back(std::make_pair(i, out.time));
-                //printf("...done!\n");
+                // printf("...done!\n");
             }
             ic(in);
-            //printf("\nTEST %ld done\n", i);
+            // printf("\nTEST %ld done\n", i);
         }
         delete res;
         handleRegressionCalcs(&outR);
@@ -140,13 +153,13 @@ namespace bigO_Finder
     }
 
     /*REGRESSION HANDLING HELPERS*/
-    static double timespecToNs(const timespec& ts)
+    static double timespecToNs(const timespec &ts)
     {
         // convert to timespec interval to nano seconds
         return 1e9 * static_cast<double>(ts.tv_sec) + static_cast<double>(ts.tv_nsec);
     }
 
-    static double mse(const std::vector<double>& y, const std::vector<double>& yhat)
+    static double mse(const std::vector<double> &y, const std::vector<double> &yhat)
     {
         // given a runtime estimate model predictions (yhat) compute error from empircal runtimes
         double s = 0.0;
@@ -163,11 +176,11 @@ namespace bigO_Finder
 
     /* ~~~ basis functions to test for our empirical regression estimation ~~~ */
     static double basis_constant(double n) { return 1.0; }
-    static double basis_log(double n)      { return std::log(std::max(2.0, n)); }
-    static double basis_linear(double n)   { return n; }
-    static double basis_nlogn(double n)    { return n * std::log(std::max(2.0, n)); }
-    static double basis_quad(double n)     { return n * n; }
-    static double basis_cubic(double n)    { return n * n * n; }
+    static double basis_log(double n) { return std::log(std::max(2.0, n)); }
+    static double basis_linear(double n) { return n; }
+    static double basis_nlogn(double n) { return n * std::log(std::max(2.0, n)); }
+    static double basis_quad(double n) { return n * n; }
+    static double basis_cubic(double n) { return n * n * n; }
     // a* f(x) + b
 
     void handleRegressionCalcs(regressionData *outR)
@@ -175,17 +188,16 @@ namespace bigO_Finder
         // accumulate our function candidates into a vector of struct
         struct Candidate
         {
-            const char* name;
+            const char *name;
             double (*basis)(double);
         };
         std::vector<Candidate> candidates = {
-            {"O(1)",      basis_constant},
-            {"O(log n)",  basis_log},
-            {"O(n)",      basis_linear},
-            {"O(n log n)",basis_nlogn},
-            {"O(n^2)",    basis_quad},
-            {"O(n^3)",    basis_cubic}
-        };
+            {"O(1)", basis_constant},
+            {"O(log n)", basis_log},
+            {"O(n)", basis_linear},
+            {"O(n log n)", basis_nlogn},
+            {"O(n^2)", basis_quad},
+            {"O(n^3)", basis_cubic}};
 
         // if less than 2 data points --> can't predict empirically, return error gracefully
         const size_t m = outR->outputPairs.size();
@@ -201,15 +213,15 @@ namespace bigO_Finder
         for (size_t i = 0; i < m; i++)
         {
             ns[i] = static_cast<double>(outR->outputPairs[i].first); // sizes (x)
-            ts[i] = timespecToNs(outR->outputPairs[i].second); // run times (y)
+            ts[i] = timespecToNs(outR->outputPairs[i].second);       // run times (y)
         }
 
         // track current best MSE and function name
         double bestMSE = std::numeric_limits<double>::infinity();
-        const char* bestName = "Unknown";
+        const char *bestName = "Unknown";
 
         // main loop: loop over each candidate function and calculate its MSE
-        for (const auto& cand : candidates)
+        for (const auto &cand : candidates)
         {
             // use Eigen to manage f(input size) -> run time functions
             Eigen::MatrixXd X(m, 2);
@@ -219,7 +231,7 @@ namespace bigO_Finder
             for (size_t i = 0; i < m; i++)
             {
                 X(i, 0) = cand.basis(ns[i]); // a * basis_function(x) + ...
-                X(i, 1) = 1.0; // ... + b
+                X(i, 1) = 1.0;               // ... + b
                 y(i) = ts[i];
             }
 
@@ -227,12 +239,12 @@ namespace bigO_Finder
             Eigen::VectorXd beta = X.colPivHouseholderQr().solve(y);
             Eigen::VectorXd yhat = X * beta;
 
-            // store the predictions for this regression in a vector 
+            // store the predictions for this regression in a vector
             std::vector<double> pred(m);
             for (size_t i = 0; i < m; i++)
                 pred[i] = yhat(i);
 
-            // given predictions, ground truths -> compute the MSE from this model 
+            // given predictions, ground truths -> compute the MSE from this model
             double modelMSE = mse(ts, pred);
             if (modelMSE < bestMSE)
             {
@@ -245,4 +257,60 @@ namespace bigO_Finder
         // result: O(F(x)) complexity estimation
         outR->order = bestName;
     }
+}
+
+namespace bigO_Finder2::Private
+{
+    void handleRegressionCalcs(regressionData *outR)
+    {
+        bigO_Finder::handleRegressionCalcs((bigO_Finder::regressionData *)outR);
+    }
+    timespec getTime()
+    {
+        rusage startR;
+        getrusage(RUSAGE_SELF, &startR);
+        return {startR.ru_utime.tv_sec, startR.ru_utime.tv_usec * 1000};
+    }
+    timespec timeDiff(timespec *a, timespec *b)
+    {
+        return bigO_Finder::diff_timespec(a, b);
+    }
+    int pipe(int *a)
+    {
+        return ::pipe(a);
+    }
+    int fork()
+    {
+        return ::fork();
+    }
+    int close(int fd)
+    {
+        return ::close(fd);
+    }
+    using sighandler = void (*)(int);
+    sighandler alarmSignalHandler(sighandler handler)
+    {
+        return signal(SIGALRM, handler);
+    }
+    int alarm(int time)
+    {
+        return ::alarm(time);
+    }
+    void alarmHandler(int a)
+    {
+        bigO_Finder::alarmHandler(a);
+    }
+    void readp(int f, void *b, size_t n)
+    {
+        read(f, b, n);
+    }
+    void writep(int f, const void *b, size_t n)
+    {
+        write(f, b, n);
+    }
+    void exit(int a)
+    {
+        ::exit(a);
+    }
+
 }
