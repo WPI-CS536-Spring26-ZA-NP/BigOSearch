@@ -17,7 +17,7 @@ namespace bigO_Finder
     typedef void (*outputCleanup)(output);
     std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> testingFunction(functionTester, EQFunc, std::map<input, expectedOutput>, size_t OutputTypeSize);
     void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result, outputCleanup);
-    struct regressionData regressionFinder(generatorFunction, functionTester, size_t OutputTypeSize, inputCleanup);
+    struct regressionData regressionFinder(generatorFunction, functionTester, size_t OutputTypeSize,inputCleanup,int);
     struct regressionData
     {
         const char *order;
@@ -40,7 +40,7 @@ namespace bigO_Finder2
     template <typename InputType, typename OutputType>
     std::tuple<bool, std::map<InputType, std::tuple<bool, OutputType, OutputType>>> testingFunction(functionTester<InputType, OutputType>, EQFunc<OutputType>, std::map<InputType, OutputType>);
     template <typename InputType, typename OutputType>
-    struct regressionData regressionFinder(generatorFunction<OutputType>, functionTester<InputType, OutputType>);
+    struct regressionData regressionFinder(generatorFunction<OutputType>, functionTester<InputType, OutputType>,int);
     struct regressionData
     {
         const char *order;
@@ -92,11 +92,11 @@ namespace bigO_Finder2
     }
 
     template <typename InputType, typename OutputType>
-    regressionData regressionFinder(generatorFunction<OutputType> gf, functionTester<InputType, OutputType> ft)
+    regressionData regressionFinder(generatorFunction<OutputType> gf, functionTester<InputType, OutputType> ft,int n)
     {
         regressionData outR{};
         Private::pipe(Private::Pipe);
-        for (size_t i = 1; i < 9999999; i = i << 1)
+        for (size_t i = 1; i < n; i = i << 1)
         {
             
             pid_t id = Private::fork();
@@ -113,7 +113,7 @@ namespace bigO_Finder2
                 Private::alarm((int)maxTime);
 
                 timespec start = Private::getTime();
-                OutputType out = ft(in);
+                OutputType outll = ft(in);
                 timespec end = Private::getTime();
                 Private::alarm(0);
                 timespec diff = Private::timeDiff(&end, &start);

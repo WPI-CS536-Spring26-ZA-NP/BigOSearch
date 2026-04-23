@@ -101,13 +101,13 @@ void *vector_int_input_generator(int size)
 
     // bubble_sort(*static_cast<vector<int> *>(input));
 
-    v->reserve(size);
+    v->resize(size);
     // Seed with current time to get different results each run
     std::srand(static_cast<unsigned int>(size));
 
     for (int i = 0; i < size; i++)
     {
-        (*v)[i] = static_cast<int>(std::rand() * 67);
+        (*v)[i] = static_cast<int>(std::rand() % 67);
     }
 
     return v;
@@ -179,8 +179,9 @@ int main()
     auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap, sizeof(int));
     printf("Result of Max testing (all):%d\n", std::get<0>(findMaxResult));
 
-    struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>), vector_int_cleanup_function);
-    printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
+    int maxFunctionRegressionIterations = 100000;
+    struct regressionData maxFunctionTimeResult = regressionFinder(vector_int_input_generator, maxFunctionTester, sizeof(int), vector_int_cleanup_function, maxFunctionRegressionIterations);
+    printf("Calculated max function runtime: %s\n", maxFunctionTimeResult.order);
 
     cleanUpTestResults(findMaxResult, int_input_cleanup_function);
 
@@ -198,6 +199,11 @@ int main()
     bubbleSortMap[(void *)&list4_b] = (void *)&buubleresult;
     auto findBuubleResult = testingFunction(bubbleSortFunctionTester, vector_int_equality, bubbleSortMap, sizeof(vector<int>));
     printf("Result of Max testing (all):%d\n", std::get<0>(findBuubleResult));
+
+    int bubbleSortRegressionIterations = 10000;
+    struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>), vector_int_cleanup_function, bubbleSortRegressionIterations);
+    printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
+
 
     cleanUpTestResults(findBuubleResult, vector_int_cleanup_function);
 
@@ -218,6 +224,11 @@ int main()
     cubMap[(void *)&list4_c] = (void *)&list4_cr;
     auto findCubRest = testingFunction(cubicFunctionTester, int_equality, cubMap, sizeof(int));
     printf("Result of Max testing (all):%d\n", std::get<0>(findCubRest));
+
+    int cubicFunctionRegressionIterations = 2048;
+    struct regressionData cubicFunctionTimeResult = regressionFinder(int_input_generator, cubicFunctionTester, sizeof(int), int_input_cleanup_function, cubicFunctionRegressionIterations);
+    printf("Cubic function runtime: %s\n", cubicFunctionTimeResult.order);
+
 
     cleanUpTestResults(findCubRest, int_input_cleanup_function);
     {
