@@ -235,6 +235,11 @@ int main()
             printf("Result of Cub instance testing (%d):%d -- got %d\texpected %d\n", i.first, std::get<0>(i.second), std::get<1>(i.second), std::get<2>(i.second));
         }
 
+        struct bigO_Finder2::regressionData bubbleSortTimeResult = bigO_Finder2::regressionFinder<int, int>([](auto a)
+                                                                                                            { return a; }, [](auto a)
+                                                                                                            { return cubic_function(a); });
+        printf("Calculated cubing runtime: %s\n", bubbleSortTimeResult.order);
+
         // cleanUpTestResults(findCubRest, int_input_cleanup_function);
     }
     {
