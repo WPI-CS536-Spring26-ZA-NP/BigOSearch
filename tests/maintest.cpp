@@ -24,7 +24,6 @@ int find_max(vector<int> v)
 void bubble_sort(vector<int> &v)
 {
     int n = v.size();
-
     // Outer loop that corresponds to the number of
     // elements to be sorted
     for (int i = 0; i < n - 1; i++)
@@ -119,7 +118,7 @@ vector<int> vector_int_input_generator2(int size)
 
     // bubble_sort(*static_cast<vector<int> *>(input));
 
-    v.reserve(size);
+    v.resize(size);
     // Seed with current time to get different results each run
     std::srand(static_cast<unsigned int>(size));
 
@@ -165,72 +164,70 @@ void *cubicFunctionTester(void *input, void *res)
 
 int main()
 {
-    // find max timing
-    std::map<input, expectedOutput> findMaxMap;
-    std::vector<int> list1 = {1, 2, 9, 3, 4, 5, 6, 7, 8};
-    std::vector<int> list2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    std::vector<int> list3 = {9, 1, 2, 3, 4, 5, 6, 7, 8};
-    std::vector<int> list4 = {1, 2, 3, 4, 5, 9, 6, 7, 8};
-    int maxresult = 9;
-    findMaxMap[(void *)&list1] = (void *)&maxresult;
-    findMaxMap[(void *)&list2] = (void *)&maxresult;
-    findMaxMap[(void *)&list3] = (void *)&maxresult;
-    findMaxMap[(void *)&list4] = (void *)&maxresult;
-    auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap, sizeof(int));
-    printf("Result of Max testing (all):%d\n", std::get<0>(findMaxResult));
+    // // find max timing
+    // std::map<input, expectedOutput> findMaxMap;
+    // std::vector<int> list1 = {1, 2, 9, 3, 4, 5, 6, 7, 8};
+    // std::vector<int> list2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // std::vector<int> list3 = {9, 1, 2, 3, 4, 5, 6, 7, 8};
+    // std::vector<int> list4 = {1, 2, 3, 4, 5, 9, 6, 7, 8};
+    // int maxresult = 9;
+    // findMaxMap[(void *)&list1] = (void *)&maxresult;
+    // findMaxMap[(void *)&list2] = (void *)&maxresult;
+    // findMaxMap[(void *)&list3] = (void *)&maxresult;
+    // findMaxMap[(void *)&list4] = (void *)&maxresult;
+    // auto findMaxResult = testingFunction(maxFunctionTester, int_equality, findMaxMap, sizeof(int));
+    // printf("Result of Max testing (all):%d\n", std::get<0>(findMaxResult));
 
-    int maxFunctionRegressionIterations = 100000;
-    struct regressionData maxFunctionTimeResult = regressionFinder(vector_int_input_generator, maxFunctionTester, sizeof(int), vector_int_cleanup_function, maxFunctionRegressionIterations);
-    printf("Calculated max function runtime: %s\n", maxFunctionTimeResult.order);
+    // int maxFunctionRegressionIterations = 100000;
+    // struct regressionData maxFunctionTimeResult = regressionFinder(vector_int_input_generator, maxFunctionTester, sizeof(int), vector_int_cleanup_function, maxFunctionRegressionIterations);
+    // printf("Calculated max function runtime: %s\n", maxFunctionTimeResult.order);
 
-    cleanUpTestResults(findMaxResult, int_input_cleanup_function);
+    // cleanUpTestResults(findMaxResult, int_input_cleanup_function);
 
-    // bubbleSort timing
+    // // bubbleSort timing
 
-    std::map<input, expectedOutput> bubbleSortMap;
-    std::vector<int> list1_b = {1, 2, 9, 3, 4, 5, 6, 7, 8};
-    std::vector<int> list2_b = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    std::vector<int> list3_b = {9, 1, 2, 3, 4, 5, 6, 7, 8};
-    std::vector<int> list4_b = {1, 2, 3, 4, 5, 9, 6, 7, 8};
-    std::vector<int> buubleresult = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    bubbleSortMap[(void *)&list1_b] = (void *)&buubleresult;
-    bubbleSortMap[(void *)&list2_b] = (void *)&buubleresult;
-    bubbleSortMap[(void *)&list3_b] = (void *)&buubleresult;
-    bubbleSortMap[(void *)&list4_b] = (void *)&buubleresult;
-    auto findBuubleResult = testingFunction(bubbleSortFunctionTester, vector_int_equality, bubbleSortMap, sizeof(vector<int>));
-    printf("Result of Max testing (all):%d\n", std::get<0>(findBuubleResult));
+    // std::map<input, expectedOutput> bubbleSortMap;
+    // std::vector<int> list1_b = {1, 2, 9, 3, 4, 5, 6, 7, 8};
+    // std::vector<int> list2_b = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // std::vector<int> list3_b = {9, 1, 2, 3, 4, 5, 6, 7, 8};
+    // std::vector<int> list4_b = {1, 2, 3, 4, 5, 9, 6, 7, 8};
+    // std::vector<int> buubleresult = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    // bubbleSortMap[(void *)&list1_b] = (void *)&buubleresult;
+    // bubbleSortMap[(void *)&list2_b] = (void *)&buubleresult;
+    // bubbleSortMap[(void *)&list3_b] = (void *)&buubleresult;
+    // bubbleSortMap[(void *)&list4_b] = (void *)&buubleresult;
+    // auto findBuubleResult = testingFunction(bubbleSortFunctionTester, vector_int_equality, bubbleSortMap, sizeof(vector<int>));
+    // printf("Result of Max testing (all):%d\n", std::get<0>(findBuubleResult));
 
-    int bubbleSortRegressionIterations = 10000;
-    struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>), vector_int_cleanup_function, bubbleSortRegressionIterations);
-    printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
+    // int bubbleSortRegressionIterations = 10000;
+    // struct regressionData bubbleSortTimeResult = regressionFinder(vector_int_input_generator, bubbleSortFunctionTester, sizeof(vector<int>), vector_int_cleanup_function, bubbleSortRegressionIterations);
+    // printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
 
+    // cleanUpTestResults(findBuubleResult, vector_int_cleanup_function);
 
-    cleanUpTestResults(findBuubleResult, vector_int_cleanup_function);
+    // // cubic_function time
 
-    // cubic_function time
+    // std::map<input, expectedOutput> cubMap;
+    // int list1_c = 1;
+    // int list2_c = 2;
+    // int list3_c = 3;
+    // int list4_c = 9;
+    // int list1_cr = 1;
+    // int list2_cr = 8;
+    // int list3_cr = 27;
+    // int list4_cr = 729;
+    // cubMap[(void *)&list1_c] = (void *)&list1_cr;
+    // cubMap[(void *)&list2_c] = (void *)&list2_cr;
+    // cubMap[(void *)&list3_c] = (void *)&list3_cr;
+    // cubMap[(void *)&list4_c] = (void *)&list4_cr;
+    // auto findCubRest = testingFunction(cubicFunctionTester, int_equality, cubMap, sizeof(int));
+    // printf("Result of Max testing (all):%d\n", std::get<0>(findCubRest));
 
-    std::map<input, expectedOutput> cubMap;
-    int list1_c = 1;
-    int list2_c = 2;
-    int list3_c = 3;
-    int list4_c = 9;
-    int list1_cr = 1;
-    int list2_cr = 8;
-    int list3_cr = 27;
-    int list4_cr = 729;
-    cubMap[(void *)&list1_c] = (void *)&list1_cr;
-    cubMap[(void *)&list2_c] = (void *)&list2_cr;
-    cubMap[(void *)&list3_c] = (void *)&list3_cr;
-    cubMap[(void *)&list4_c] = (void *)&list4_cr;
-    auto findCubRest = testingFunction(cubicFunctionTester, int_equality, cubMap, sizeof(int));
-    printf("Result of Max testing (all):%d\n", std::get<0>(findCubRest));
+    // int cubicFunctionRegressionIterations = 2048;
+    // struct regressionData cubicFunctionTimeResult = regressionFinder(int_input_generator, cubicFunctionTester, sizeof(int), int_input_cleanup_function, cubicFunctionRegressionIterations);
+    // printf("Cubic function runtime: %s\n", cubicFunctionTimeResult.order);
 
-    int cubicFunctionRegressionIterations = 2048;
-    struct regressionData cubicFunctionTimeResult = regressionFinder(int_input_generator, cubicFunctionTester, sizeof(int), int_input_cleanup_function, cubicFunctionRegressionIterations);
-    printf("Cubic function runtime: %s\n", cubicFunctionTimeResult.order);
-
-
-    cleanUpTestResults(findCubRest, int_input_cleanup_function);
+    // cleanUpTestResults(findCubRest, int_input_cleanup_function);
     {
         std::map<int, int> cubMap;
         cubMap[1] = 1;
@@ -246,9 +243,10 @@ int main()
             printf("Result of Cub instance testing (%d):%d -- got %d\texpected %d\n", i.first, std::get<0>(i.second), std::get<1>(i.second), std::get<2>(i.second));
         }
 
+        auto n = 2048;
         struct bigO_Finder2::regressionData bubbleSortTimeResult = bigO_Finder2::regressionFinder<int, int>([](auto a)
                                                                                                             { return a; }, [](auto a)
-                                                                                                            { return cubic_function(a); });
+                                                                                                            { return cubic_function(a); }, n);
         printf("Calculated cubing runtime: %s\n", bubbleSortTimeResult.order);
 
         // cleanUpTestResults(findCubRest, int_input_cleanup_function);
@@ -275,8 +273,9 @@ int main()
             // printf("Result of Max testing (%d):%d -- got %d\texpected %d\n", i.first, std::get<0>(i.second), std::get<1>(i.second), std::get<2>(i.second));
         }
 
+        auto n = 10000;
         struct bigO_Finder2::regressionData bubbleSortTimeResult = bigO_Finder2::regressionFinder<std::vector<int>, std::vector<int>>(vector_int_input_generator2, [](auto a)
-                                                                                                                                      { bubble_sort(a); return a; });
+                                                                                                                                      { bubble_sort(a); return a; },n);
         printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
         // cleanUpTestResults(findBuubleResult, vector_int_cleanup_function);
     }

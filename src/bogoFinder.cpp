@@ -216,7 +216,8 @@ namespace bigO_Finder
 
         // debug: print everything before regression (after parent recieves info from child)
         for (const auto& p : outR->outputPairs) {
-            printf("(n=%d, time_ns=%f)\n", p.first, timespecToNs(p.second));
+            // printf("(n=%d, time_ns=%f)\n", p.first, timespecToNs(p.second));
+            printf("(n=%d, time_s=%ld time_ns=%f)\n", p.first, p.second.tv_sec,timespecToNs(p.second));
         }
 
         // if less than 2 data points --> can't predict empirically, return error gracefully

@@ -2,6 +2,7 @@
 #include <tuple>
 #include <vector>
 #include <ctime>
+#include <iostream>
 namespace bigO_Finder
 {
 
@@ -108,13 +109,16 @@ namespace bigO_Finder2
             else if (id == 0)
             {
                 InputType in = gf(i);
+                std::cout << '.';
                 Private::close(Private::Pipe[0]);
                 Private::alarmSignalHandler(Private::alarmHandler);
                 Private::alarm((int)maxTime);
 
                 timespec start = Private::getTime();
+                // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
                 OutputType outll = ft(in);
                 timespec end = Private::getTime();
+                // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 Private::alarm(0);
                 timespec diff = Private::timeDiff(&end, &start);
 
@@ -126,12 +130,23 @@ namespace bigO_Finder2
             }
             else
             {
-                Private::close(Private::Pipe[1]);
                 Private::readp(Private::Pipe[0], &Private::out, sizeof(Private::out));
-                Private::close(Private::Pipe[0]);
-                outR.outputPairs.push_back(std::make_pair(i, Private::out.time));
+                // time_t s,n;
+                // s=Private::out.time.tv_sec;
+                // n=Private::out.time.tv_nsec;
+                // printf("%d, %ld, %ld.%ld",Private::out.failed, i,s,n);
+                if(!Private::out.failed){
+                    outR.outputPairs.push_back(std::make_pair(i, Private::out.time));
+                }else
+                {
+                    break;
+                }
             }
+            
+            
         }
+        Private::close(Private::Pipe[1]);
+        Private::close(Private::Pipe[0]);
         Private::handleRegressionCalcs(&outR);
         return outR;
     }
