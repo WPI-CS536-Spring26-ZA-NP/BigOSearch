@@ -21,7 +21,7 @@ namespace bigO_Finder
 //type aliases for input and output
     typedef void *input;
     typedef void *output;
-    typedef void *expectedOutput; // -- just here for to be explicit
+    typedef output expectedOutput; // -- just here for to be explicit
 // generates Input given size
 // provided by user
     typedef void *(*generatorFunction)(int size);
