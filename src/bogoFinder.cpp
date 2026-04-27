@@ -286,11 +286,12 @@ namespace bigO_Finder2::Private
     {
         bigO_Finder::handleRegressionCalcs((bigO_Finder::regressionData *)outR);
     }
-    timespec getTime()
+    void getTime(timespec* t)
     {
-        rusage startR;
-        getrusage(RUSAGE_SELF, &startR);
-        return {startR.ru_utime.tv_sec, startR.ru_utime.tv_usec * 1000};
+        //rusage startR;
+        //getrusage(RUSAGE_SELF, &startR);
+        //return {startR.ru_utime.tv_sec, startR.ru_utime.tv_usec * 1000};
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, t);
     }
     timespec timeDiff(timespec *a, timespec *b)
     {

@@ -41,7 +41,7 @@ namespace bigO_Finder2
     template <typename InputType, typename OutputType>
     std::tuple<bool, std::map<InputType, std::tuple<bool, OutputType, OutputType>>> testingFunction(functionTester<InputType, OutputType>, EQFunc<OutputType>, std::map<InputType, OutputType>);
     template <typename InputType, typename OutputType>
-    struct regressionData regressionFinder(generatorFunction<OutputType>, functionTester<InputType, OutputType>,int);
+    struct regressionData regressionFinder(generatorFunction<InputType>, functionTester<InputType, OutputType>,int);
     struct regressionData
     {
         const char *order;
@@ -73,7 +73,7 @@ namespace bigO_Finder2
     namespace Private
     {
         void handleRegressionCalcs(regressionData *outR);
-        timespec getTime();
+        void getTime(timespec *);
         timespec timeDiff(timespec *, timespec *);
         int pipe(int *);
         int fork();
@@ -93,7 +93,7 @@ namespace bigO_Finder2
     }
 
     template <typename InputType, typename OutputType>
-    regressionData regressionFinder(generatorFunction<OutputType> gf, functionTester<InputType, OutputType> ft,int n)
+    regressionData regressionFinder(generatorFunction<InputType> gf, functionTester<InputType, OutputType> ft,int n)
     {
         regressionData outR{};
         Private::pipe(Private::Pipe);
@@ -114,10 +114,11 @@ namespace bigO_Finder2
                 Private::alarmSignalHandler(Private::alarmHandler);
                 Private::alarm((int)maxTime);
 
-                timespec start = Private::getTime();
+                timespec start, end;
+                Private::getTime(&start);
                 // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
                 OutputType outll = ft(in);
-                timespec end = Private::getTime();
+                Private::getTime(&end);
                 // clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 Private::alarm(0);
                 timespec diff = Private::timeDiff(&end, &start);

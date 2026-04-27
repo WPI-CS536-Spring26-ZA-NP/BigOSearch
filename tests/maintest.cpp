@@ -279,4 +279,45 @@ int main()
         printf("Calculated bubble sort runtime: %s\n", bubbleSortTimeResult.order);
         // cleanUpTestResults(findBuubleResult, vector_int_cleanup_function);
     }
+    {
+        // findMax timing
+
+        std::map<std::vector<int>, int> findMaxMap;
+
+        std::vector<int> list1 = {1, 2, 9, 3, 4, 5, 6, 7, 8};
+        std::vector<int> list2 = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+        std::vector<int> list3 = {9, 1, 2, 3, 4, 5, 6, 7, 8};
+        std::vector<int> list4 = {1, 2, 3, 4, 5, 9, 6, 7, 8};
+
+        findMaxMap[list1] = 9;
+        findMaxMap[list2] = 9;
+        findMaxMap[list3] = 9;
+        findMaxMap[list4] = 9;
+
+        auto findMaxResult =
+            bigO_Finder2::testingFunction<std::vector<int>, int>(
+                [](std::vector<int> a) {
+                    return find_max(a);
+                },
+                [](int a, int b) {
+                    return a == b;
+                },
+                findMaxMap
+            );
+
+        printf("Result of find_max testing (all):%d\n", std::get<0>(findMaxResult));
+
+        auto n = 100000;
+
+        struct bigO_Finder2::regressionData findMaxTimeResult =
+            bigO_Finder2::regressionFinder<std::vector<int>, int>(
+                vector_int_input_generator2,
+                [](std::vector<int> a) {
+                    return find_max(a);
+                },
+                n
+            );
+
+        printf("Calculated find_max runtime: %s\n", findMaxTimeResult.order);
+    }
 }
