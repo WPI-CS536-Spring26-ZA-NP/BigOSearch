@@ -10,32 +10,71 @@ namespace bigO_Finder
     inline unsigned int maxJobs = 1; // currently unused
 // aliases for our types
 
-// takes in two outputs and returns if they are equal
-// provided by user
+    /**
+     * takes in two outputs and returns if they are equal
+     * provided by user
+     */
     typedef bool (*EQFunc)(void *outputA, void *outputB);
 
-// a wrapper around the function you want to call that lifts input
-// into the correct type before passing it into your function and
-// returns the result in place of the result param
-// provided by user
+    /**
+     * a wrapper around the function you want to call that lifts input
+     * into the correct type before passing it into your function and
+     * returns the result in place of the result param
+     * provided by user
+     */
     typedef void *(*functionTester)(void *input, void *result); 
+    
 //type aliases for input and output
+
     typedef void *input;
     typedef void *output;
-    typedef void *expectedOutput; // -- just here for to be explicit
-// generates Input given size
-// provided by user
-    typedef void *(*generatorFunction)(int size);
-// pass to regressionFinder to destroy generated input when done using it
+    typedef output expectedOutput; // -- just here for to be explicit
+
+    /**
+     * generates Input given size
+     * provided by user
+     */
+    typedef input (*generatorFunction)(int size);
+
+    /**
+     * pass to regressionFinder to destroy generated input when done using it
+     * provided by user
+     */
     typedef void (*inputCleanup)(input);
-// pass to clean up test results to destroy output data when done
+
+    /**
+     * pass to clean up test results to destroy output data when done
+     * provided by user
+     */
     typedef void (*outputCleanup)(output);
+
+    /**
+     * @param functionTester function to test
+     * @param EQFunc funciton to check equality
+     * @param Map a map of inputs and corresponsing outputs for the function
+     * @param OutputTypeSize size of output type so we can alloce the memory
+     */
     std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> testingFunction(functionTester, EQFunc, std::map<input, expectedOutput>, size_t OutputTypeSize);
+
+    /**
+     * @brief given results from testingFunction, clean up allocated memeory user is done using it
+     */
     void cleanUpTestResults(std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>> result, outputCleanup);
+
+    /**
+     * @brief generates input using generator function and passe it to function tester. cleans up output when done. 
+     * @param geneneratorFunction
+     * @param functionTester
+     * @param OutputTypeSize size of output type to allocate space for it
+     * @param inputCleanup function to clean up generated input
+     * @param n make input size to generate
+     */
     struct regressionData regressionFinder(generatorFunction, functionTester, size_t OutputTypeSize,inputCleanup,int);
     struct regressionData
     {
+        // string rep of Big O notation
         const char *order;
+        // list of input size out processing time
         std::vector<std::pair<int, timespec>> outputPairs;
     };
 
@@ -45,20 +84,53 @@ namespace bigO_Finder2
 {
 
     inline int maxTime = 10; // Default Timeout is 10 secs but can be changed globally
-    // inline unsigned int maxJobs = 1;
+
+    /**
+     * takes in two outputs and returns if they are equal
+     * provided by user
+     */
     template <typename OutputType>
     using EQFunc = bool (*)(OutputType outputA, OutputType outputB);
+
+    /**
+     * a wrapper around the function you want to test that takes in an input and returns an output
+     * provded by user
+     */
     template <typename InputType, typename OutputType>
     using functionTester = OutputType (*)(InputType input);
     template <typename InputType>
+    /**
+     * a function that generates an input of the given size
+     * provided by user
+     */
     using generatorFunction = InputType (*)(int size);
+
+    /**
+     * @brief function to test provded function. given funciton to test, functio to check equality, and input output map
+     * @return result from all tests
+     */
     template <typename InputType, typename OutputType>
     std::tuple<bool, std::map<InputType, std::tuple<bool, OutputType, OutputType>>> testingFunction(functionTester<InputType, OutputType>, EQFunc<OutputType>, std::map<InputType, OutputType>);
     template <typename InputType, typename OutputType>
+
+      /**
+     * @brief generates input using generator function and passe it to function tester
+     * @param geneneratorFunction
+     * @param functionTester
+     * @param n make input size to generate
+     * @return regressionData
+     */
     struct regressionData regressionFinder(generatorFunction<InputType>, functionTester<InputType, OutputType>,int);
+
+    /**
+     * @brief output data for regression Finder
+     * 
+     */
     struct regressionData
     {
+        // string rep of Big O notation
         const char *order;
+        // list of input size out processing time
         std::vector<std::pair<int, timespec>> outputPairs;
     };
 

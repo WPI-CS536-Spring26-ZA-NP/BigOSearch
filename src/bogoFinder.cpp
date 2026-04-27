@@ -112,7 +112,6 @@ namespace bigO_Finder
                 signal(SIGALRM, alarmHandler);
                 alarm((int)maxTime);
                 timespec start;
-                // rusage startR;
                 timespec end;
  
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
@@ -121,14 +120,8 @@ namespace bigO_Finder
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
                 free(res);
-                // timeval diff = diff_timeval(&endR.ru_utime, &startR.ru_utime);
-                // printf("Time difference is %lds, %ldus\n", diff.tv_sec, diff.tv_usec);
                 timespec diff = diff_timespec(&end, &start);
                 printf("Time difference is %lds, %ldus\n", diff.tv_sec, diff.tv_nsec);
-                // bigO_Finder::out.failed = false;
-                // bigO_Finder::out.time.tv_sec = diff.tv_sec;
-                // bigO_Finder::out.time.tv_nsec = diff.tv_usec * 1000;
-                // write(Pipe[1], &out, sizeof(out));
                 bigO_Finder::out.time = diff;
                 write(Pipe[1], &bigO_Finder::out, sizeof(bigO_Finder::out));
                 close(Pipe[1]);
@@ -269,9 +262,7 @@ namespace bigO_Finder2::Private
     }
     void getTime(timespec* t)
     {
-        //rusage startR;
-        //getrusage(RUSAGE_SELF, &startR);
-        //return {startR.ru_utime.tv_sec, startR.ru_utime.tv_usec * 1000};
+
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, t);
     }
     timespec timeDiff(timespec *a, timespec *b)
