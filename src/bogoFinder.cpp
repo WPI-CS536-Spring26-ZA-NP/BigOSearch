@@ -18,13 +18,13 @@ namespace bigO_Finder
     std::tuple<bool, std::map<input, std::tuple<bool, output, expectedOutput>>>
     testingFunction(functionTester tester, EQFunc eqFunc, std::map<input, expectedOutput> map, size_t OutputTypeSize)
     {
-
+        // store a map for input to expected output and whether it matches true output
         std::map<input, std::tuple<bool, output, expectedOutput>> outmap;
         bool res = true;
 
         for (auto &&i : map)
         {
-
+            // run the tester function for each input and see if it produces expected output
             void *resp = new char[OutputTypeSize];
             output oput = tester(i.first, resp);
             bool valid = eqFunc(oput, i.second);
@@ -32,6 +32,7 @@ namespace bigO_Finder
             if (!valid)
             {
                 res = false;
+                // unexpected output --> failure
             }
         }
         return std::tuple(res, outmap);
@@ -81,10 +82,11 @@ namespace bigO_Finder
     {
         regressionData outR{};
         char *res = new char[OutputTypeSize];
+        // run a loop for each input (exponential scale)
         for (size_t i = 1; i < n; i = i << 1) // n = max size to test (floor power of 2)
         {
             input in = gf(i);
-
+            // fork a seperate process to more accurately calculate runtime
             pipe(Pipe);
             pid_t id = fork();
 
@@ -94,18 +96,19 @@ namespace bigO_Finder
             }
             else if (id == 0)
             {
+                // child process: run function itself, measure runtime
                 close(Pipe[0]);
-                signal(SIGALRM, alarmHandler);
+                signal(SIGALRM, alarmHandler); // interupt if it runs too long
                 alarm((int)maxTime);
                 timespec start;
                 timespec end;
- 
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-
                 output out = ft(in, (void*)res);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
                 free(res);
+
+                // caculcate time difference, write it to parent
                 timespec diff = diff_timespec(&end, &start);
                 printf("Time difference is %lds, %ldns\n", diff.tv_sec, diff.tv_nsec);
                 bigO_Finder::out.failed = false;
@@ -116,6 +119,7 @@ namespace bigO_Finder
             }
             else
             {
+                // parent: wait for child runtime result
                 close(Pipe[1]);
                 read(Pipe[0], &out, sizeof(out));
                 close(Pipe[1]);
@@ -123,6 +127,8 @@ namespace bigO_Finder
             }
             ic(in);
         }
+
+        // run regression on time difference results
         delete[] res;
         handleRegressionCalcs(&outR);
         return outR;
