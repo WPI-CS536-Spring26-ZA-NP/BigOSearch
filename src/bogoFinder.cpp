@@ -32,7 +32,6 @@ namespace bigO_Finder
             if (!valid)
             {
                 res = false;
-                // break
             }
         }
         return std::tuple(res, outmap);
@@ -95,20 +94,14 @@ namespace bigO_Finder
             }
             else if (id == 0)
             {
-                //printf("Child process start...\n");
                 close(Pipe[0]);
                 signal(SIGALRM, alarmHandler);
                 alarm((int)maxTime);
                 timespec start;
                 timespec end;
-                //printf("About to run malloc...\n");
-                // void *res = (void*)malloc(OutputTypeSize);
-                //printf("Post malloc, about to run fuction\n");
+ 
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-                /*int ll = 0;
-                for(int ii = 0 ; ii <10*i; ii++){
-                    ll +=i;
-                }*/
+
                 output out = ft(in, (void*)res);
                 clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end);
                 alarm(0);
@@ -117,23 +110,18 @@ namespace bigO_Finder
                 printf("Time difference is %lds, %ldns\n", diff.tv_sec, diff.tv_nsec);
                 bigO_Finder::out.failed = false;
                 bigO_Finder::out.time = diff;
-                //write(Pipe[1], &out, sizeof(out));
                 write(Pipe[1], &bigO_Finder::out, sizeof(bigO_Finder::out));
                 close(Pipe[1]);
-                //printf("~~~child process end~~~\n");
                 exit(0);
             }
             else
             {
-                //printf("Parent waiting for child %d to give information...\n", id);
                 close(Pipe[1]);
                 read(Pipe[0], &out, sizeof(out));
                 close(Pipe[1]);
                 outR.outputPairs.push_back(std::make_pair(i, out.time));
-                //printf("...done!\n");
             }
             ic(in);
-            //printf("\nTEST %ld done\n", i);
         }
         delete[] res;
         handleRegressionCalcs(&outR);
